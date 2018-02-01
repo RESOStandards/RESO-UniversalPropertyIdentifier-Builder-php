@@ -45,6 +45,7 @@ class Upi implements UpiInterface
     public function __construct($upi = false, HandlerInterface $log_handler = null)
     {
         $this->log = new Logger('upi_logger');
+
         $this->log->pushHandler(new ErrorLogHandler());
         if ($log_handler) {
             $this->log->pushHandler($log_handler);
