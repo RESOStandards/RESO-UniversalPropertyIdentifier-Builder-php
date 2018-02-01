@@ -8,9 +8,9 @@ class UpiTest extends PHPUnit_Framework_TestCase
     public function testBasicUPI()
     {
         $good_upis = [
-            "US-04015-N -11022331-R-N",
+            "US-04015-N-11022331-R-N",
             "US-42049-49888-1213666-R-N",
-            "US-36061-N- 010237502R1-R-N",
+            "US-36061-N-010237502R1-R-N",
             "US-36061-N-010237502R1-S-113",
             "US-06075-N-40010333-T-10",
             "US-13051-N-1122444-R-N",
