@@ -32,6 +32,7 @@ class Upi implements UpiInterface
     public $country_code;
     public $sub_country_name;
     public $sub_country_code;
+    public $sub_county_code;
     public $property_id;
     public $property_code;
     public $sub_property_code;
@@ -94,7 +95,7 @@ class Upi implements UpiInterface
             $this->getSubCountyCode(),
             $this->getPropertyId(),
             $this->getPropertyCode(),
-            $this->getSubCountryCode(),
+            $this->getSubPropertyCode(),
         ];
 
         $this->setUpi(
