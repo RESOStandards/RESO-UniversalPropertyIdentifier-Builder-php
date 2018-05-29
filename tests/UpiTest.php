@@ -16,10 +16,10 @@ class UpiTest extends PHPUnit_Framework_TestCase
             "US-13051-N-1122444-R-N",
             "US-36061-N-0122213-S-118",
             "US-04019-N-12401001H-B-65A",
-            "US-123331-N-N-99798987-99",
         ];
 
         $bad_upis = [
+            "US-123331-N-N-99798987-99",
             "US-123331-N-87-99",
             "XX-123331-N-N-99798987-99",
             "OIOASPODASDO APOSAPSCAS" ,
@@ -27,12 +27,12 @@ class UpiTest extends PHPUnit_Framework_TestCase
 
         foreach ($good_upis as $gu) {
             $upi = new Upi($gu);
-            $this->assertTrue($upi->isValid());
+            $this->assertTrue($upi->isValid(), $gu);
         }
 
         foreach ($bad_upis as $bu) {
             $upi = new Upi($bu);
-            $this->assertFalse($upi->isValid());
+            $this->assertFalse($upi->isValid(), $bu);
         }
     }
 }

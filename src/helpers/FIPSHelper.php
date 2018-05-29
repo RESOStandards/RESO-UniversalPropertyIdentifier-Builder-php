@@ -7,7 +7,7 @@ namespace ResoUpiTester\helpers;
 class FIPSHelper
 {
     // format = [
-    //   State Abbreviation, State FIPS Code, County FIPS Code, FIPS Entity Code, ANSI Code, GU Name, Entity Description
+    //   STATE ABBREV, STATE FIPS, COUNTY FIPS, COUNTY NAME, COUNTY SUB FIPS, COUNTY SUB NAME, FUNCSTAT
     // ]
     public $fips_codes = [];
 
@@ -25,7 +25,9 @@ class FIPSHelper
                 'state_code' => $row[1],
                 'county_code' => $row[2],
                 'fips_code' => $row[1] . $row[2],
-                'name' => $row[5],
+                'name' => $row[3],
+                'county_sub_fips' => $row[4],
+                'county_sub_name' => $row[5],
             ];
         }
 
@@ -53,6 +55,19 @@ class FIPSHelper
 
             if ($data['state'] == $abbreviation) {
                 return $data['state_code'];
+            }
+        }
+
+        return null;
+    }
+
+    public function getSubCountyCode(string $state_abbreviation, string $sub_county_name)
+    {
+        $state_options = $this->fips_codes[$state_abbreviation];
+
+        foreach ($state_options as $option) {
+            if ($option['county_sub_name'] == $sub_county_name) {
+                return $option['county_sub_fips'];
             }
         }
 

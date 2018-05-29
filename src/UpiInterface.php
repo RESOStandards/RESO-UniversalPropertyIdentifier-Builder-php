@@ -19,10 +19,10 @@ interface UpiInterface
     public function setSubCountyCode(string $sub_county_code) : void;
     public function getPropertyId() : string;
     public function setPropertyId(string $property_id) : void;
-    public function getPropertyCode() : string;
-    public function setPropertyCode(string $property_code) : void;
-    public function getSubPropertyCode() : mixed;
-    public function setSubPropertyCode($sub_property_code) : void;
+    public function getSubPropertyTypeCode() : string;
+    public function setSubPropertyTypeCode(string $property_code) : void;
+    public function getSubPropertyId() : string;
+    public function setSubPropertyId($sub_property_code) : void;
     public function isValid() : bool;
     public function setIsValid(bool $is_valid) : void;
 }

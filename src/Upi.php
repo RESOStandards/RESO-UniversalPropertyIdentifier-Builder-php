@@ -17,6 +17,7 @@ use Monolog\Logger;
  * @property string country_code
  * @property string sub_country_name
  * @property string sub_country_code
+ * @property string sub_county_name
  * @property string sub_county_code
  * @property string property_id
  * @property string property_code
@@ -26,17 +27,35 @@ use Monolog\Logger;
  */
 class Upi implements UpiInterface
 {
+    const DEFAULT_PROPERTY = 'N'; // default property
+    const REAL_PROPERTY = 'R'; // 'normal' property
+    const STOCK_PROPERTY = 'S'; // stock, co-op
+    const TEMPORARY_PROPERTY = 'T'; // temporary or proposed (eg. bare land)
+    const BUILDING_PROPERTY = 'B'; // property with multiple building on it
+
+
+    //{COUNTRY}-{SUB-COUNTRY}-{SUB-COUNTY}-{LOCAL-ID}-{PROPTYPE}-{SUB-PROPERTY-ID}
+
     public $log;
     public $upi;
     public $country_name;
     public $country_code;
     public $sub_country_name;
     public $sub_country_code;
-    public $sub_county_code;
-    public $property_id;
-    public $property_code;
-    public $sub_property_code;
+    public $sub_county_name;
+    public $sub_county_code = 'N'; // defaults to N if no authoritative sub county code exists
+    public $property_id; // APN or parcel / tax ID
+    public $sub_property_type_code;
+    public $sub_property_id = 'N'; // defaults to N if no unit # exists
     public $is_valid = null;
+
+    public $sub_property_type_codes = [
+        Upi::DEFAULT_PROPERTY,
+        Upi::REAL_PROPERTY,
+        Upi::STOCK_PROPERTY,
+        Upi::TEMPORARY_PROPERTY,
+        Upi::BUILDING_PROPERTY,
+    ];
 
     /**
      * Upi constructor.
@@ -60,6 +79,7 @@ class Upi implements UpiInterface
 
     /**
      *
+     * {COUNTRY}-{SUB-COUNTRY}-{SUB-COUNTY}-{LOCAL-ID}-{PROPTYPE}-{SUB-PROPERTY-ID}
      */
     public function parseUpi(): void
     {
@@ -72,10 +92,12 @@ class Upi implements UpiInterface
 
         $this->setCountryCode($parts[0]); // eg US
         $this->setSubCountryCode($parts[1]); // eg FIPS code or Int'l equivalent
-        $this->setSubCountyCode($parts[2]); // sub-county ID or N
-        $this->setPropertyId($parts[3]); // parcel ID
-        $this->setPropertyCode($parts[4]); // R(n) (n being integer), S, T, B
-        $this->setSubPropertyCode($parts[5]); // N, (int) unit number, lot number, or building ID number
+        $this->setSubCountyCode($parts[2]); // N if not set by county
+        $this->setPropertyId($parts[3]); // parcel ID / APN
+        $this->setSubPropertyTypeCode($parts[4]); // R(n) (n being integer), S, T, B
+        $this->setSubPropertyId($parts[5]); // N, (int) unit number, lot number, or building ID number
+
+        $this->checkValid();
 
         // if we still haven't set is_valid to false, set it to true
         if (is_null($this->is_valid)) {
@@ -94,8 +116,8 @@ class Upi implements UpiInterface
             $this->getSubCountryCode(),
             $this->getSubCountyCode(),
             $this->getPropertyId(),
-            $this->getPropertyCode(),
-            $this->getSubPropertyCode(),
+            $this->getSubPropertyTypeCode(),
+            $this->getSubPropertyId(),
         ];
 
         $this->setUpi(
@@ -181,6 +203,22 @@ class Upi implements UpiInterface
     /**
      * @return string
      */
+    public function getSubCountyName(): string
+    {
+        return $this->sub_county_name;
+    }
+
+    /**
+     * @param string $sub_county_name
+     */
+    public function setSubCountyName(string $sub_county_name): void
+    {
+        $this->sub_county_name = $sub_county_name;
+    }
+
+    /**
+     * @return string
+     */
     public function getSubCountyCode(): string
     {
         return $this->sub_county_code;
@@ -191,11 +229,6 @@ class Upi implements UpiInterface
      */
     public function setSubCountyCode(string $sub_county_code): void
     {
-        if (empty($sub_county_code)) {
-            $this->log->notice("Sub county code empty, setting to N");
-            $sub_county_code = 'N';
-        }
-
         $this->sub_county_code = $sub_county_code;
     }
 
@@ -218,33 +251,33 @@ class Upi implements UpiInterface
     /**
      * @return string
      */
-    public function getPropertyCode(): string
+    public function getSubPropertyTypeCode(): string
     {
         return $this->property_code;
     }
 
     /**
-     * @param $property_code
+     * @param $sub_property_type_code
      */
-    public function setPropertyCode(string $property_code): void
+    public function setSubPropertyTypeCode(string $sub_property_type_code): void
     {
-        $this->property_code = $property_code;
+        $this->property_code = $sub_property_type_code;
     }
 
     /**
      * @return mixed
      */
-    public function getSubPropertyCode(): mixed
+    public function getSubPropertyId(): string
     {
         return $this->sub_property_code;
     }
 
     /**
-     * @param $sub_property_code
+     * @param $sub_property_id
      */
-    public function setSubPropertyCode($sub_property_code): void
+    public function setSubPropertyId($sub_property_id): void
     {
-        $this->sub_property_code = $sub_property_code;
+        $this->sub_property_code = $sub_property_id;
     }
 
     /**
@@ -261,5 +294,13 @@ class Upi implements UpiInterface
     public function setIsValid(bool $is_valid): void
     {
         $this->is_valid = $is_valid;
+    }
+
+    private function checkValid()
+    {
+        // check the type
+        if (!in_array($this->property_code, $this->sub_property_type_codes)) {
+            $this->setIsValid(false);
+        };
     }
 }
